@@ -2,7 +2,7 @@
     use Illuminate\Support\Str;
 
     // Módulos del menú lateral. Los que todavía no tienen pantalla van con
-    // 'ruta' => null y se muestran como "Pronto"; cada módulo pone su ruta
+    // 'ruta' => null y se muestran deshabilitados; cada módulo pone su ruta
     // acá cuando se hace su tarea.
     $modulos = [
         ['nombre' => 'Inicio', 'ruta' => 'inicio', 'activa' => 'inicio', 'icono' => '<path d="M3 10.5 12 3l9 7.5V21H3z"/>'],
@@ -72,10 +72,9 @@
                                 <span class="truncate lg:mini:sr-only">{{ $modulo['nombre'] }}</span>
                             </a>
                         @else
-                            <span aria-disabled="true" title="{{ $modulo['nombre'] }} (pronto)" class="{{ $item }} cursor-default font-medium text-[#6B6B66]">
+                            <span aria-disabled="true" title="{{ $modulo['nombre'] }}" class="{{ $item }} cursor-default font-medium text-[#6B6B66]">
                                 {!! $icono !!}
                                 <span class="truncate lg:mini:sr-only">{{ $modulo['nombre'] }}</span>
-                                <span class="ml-auto flex-none rounded-full border border-white/15 px-2 py-px text-[11px] lg:mini:hidden">Pronto</span>
                             </span>
                         @endif
                     </li>
