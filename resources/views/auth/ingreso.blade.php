@@ -10,10 +10,7 @@
 <body class="m-0 bg-[#141413] font-sans leading-[normal] text-white">
     <main class="mx-auto flex min-h-dvh w-full max-w-[390px] flex-col justify-center gap-[30px] px-7 py-8">
 
-        <div>
-            <img src="{{ asset('img/logo.png') }}" alt="Shopping de los Tejidos" class="inline h-[62px] w-auto align-baseline">
-            <div class="mt-4 text-[14px] text-[#A8A8A2]">Sistema de gestión</div>
-        </div>
+        <img src="{{ asset('img/logo.png') }}" alt="Shopping de los Tejidos" class="h-[62px] w-auto self-start">
 
         <form method="POST" action="{{ route('login') }}" class="flex flex-col gap-[30px]" novalidate>
             @csrf
