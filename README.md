@@ -44,7 +44,4 @@ El sistema queda en http://localhost:8000.
 
 ## Ramas
 
-- `main`: versión estable.
-- `develop`: integración del trabajo en curso.
-- `feature/<modulo>`: desarrollo de cada módulo, sale de `develop` y vuelve a `develop`.
-- `fix/<descripcion>`: corrección de errores.
+Se trabaja directo sobre `main`.
