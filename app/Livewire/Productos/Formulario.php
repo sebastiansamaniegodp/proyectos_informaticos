@@ -1,0 +1,255 @@
+<?php
+
+namespace App\Livewire\Productos;
+
+use App\Models\Familia;
+use App\Models\Producto;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
+
+/**
+ * Pantalla "Alta de producto" del prototipo. La misma pantalla sirve para
+ * editar un producto existente, que es a donde lleva cada fila del catálogo.
+ */
+class Formulario extends Component
+{
+    use WithFileUploads;
+
+    private const PRECIOS = ['precio_venta', 'precio_metro', 'precio_mayorista', 'costo'];
+
+    public ?Producto $producto = null;
+
+    public ?int $id_familia = null;
+
+    public string $altura = '';
+
+    public string $abertura = '';
+
+    public string $calibre = '';
+
+    public string $unidad_venta = 'ROLLO';
+
+    public bool $fraccionable = false;
+
+    public string $metraje = '';
+
+    // Los precios se escriben con puntos de miles, como en la lista.
+    public string $precio_venta = '';
+
+    public string $precio_metro = '';
+
+    public string $precio_mayorista = '';
+
+    public string $costo = '';
+
+    /** @var TemporaryUploadedFile|null Ya llega achicada desde el navegador. */
+    public $foto = null;
+
+    public function mount(?Producto $producto = null): void
+    {
+        if (! $producto?->exists) {
+            $this->producto = null;
+
+            return;
+        }
+
+        $this->producto = $producto;
+        $this->id_familia = $producto->id_familia;
+        $this->altura = (string) $producto->altura_cm;
+        $this->abertura = (string) $producto->abertura;
+        $this->calibre = (string) $producto->calibre;
+        $this->unidad_venta = $producto->unidad_venta;
+        $this->fraccionable = $producto->seCorta();
+        $this->metraje = (string) $producto->metraje_rollo;
+
+        foreach (self::PRECIOS as $campo) {
+            $this->{$campo} = Producto::formatearPrecio($producto->{$campo});
+        }
+    }
+
+    public function updated(string $propiedad): void
+    {
+        // El aviso de un campo se va cuando se corrige; el del código depende
+        // de varios campos, así que se va con cualquier cambio.
+        $this->resetErrorBag([$propiedad, 'codigo']);
+
+        if (in_array($propiedad, self::PRECIOS, true)) {
+            $this->{$propiedad} = Producto::formatearPrecio(self::entero($this->{$propiedad}));
+        }
+    }
+
+    public function updatedFoto(): void
+    {
+        $this->validate(['foto' => ['nullable', 'image', 'max:2048']], [
+            'foto.image' => 'La foto tiene que ser una imagen.',
+            'foto.max' => 'La foto es muy pesada.',
+        ]);
+    }
+
+    #[Computed]
+    public function familias(): Collection
+    {
+        return Familia::activas()->get();
+    }
+
+    /**
+     * Código que se va armando mientras se completa el formulario.
+     */
+    #[Computed]
+    public function codigo(): ?string
+    {
+        $familia = $this->familias->firstWhere('id_familia', $this->id_familia);
+
+        if (! $familia) {
+            return null;
+        }
+
+        return Producto::armarCodigo(
+            $familia,
+            $this->abertura,
+            $this->calibre,
+            self::entero($this->altura),
+            $this->unidad_venta,
+            $this->esRollo() ? self::entero($this->metraje) : null,
+        );
+    }
+
+    public function esRollo(): bool
+    {
+        return $this->unidad_venta === 'ROLLO';
+    }
+
+    public function seCorta(): bool
+    {
+        return $this->esRollo() && $this->fraccionable;
+    }
+
+    public function guardar(): void
+    {
+        $datos = Validator::make([
+            'id_familia' => $this->id_familia,
+            'altura' => self::entero($this->altura),
+            'abertura' => trim($this->abertura) ?: null,
+            'calibre' => trim($this->calibre) ?: null,
+            'unidad_venta' => $this->unidad_venta,
+            'metraje' => $this->esRollo() ? self::entero($this->metraje) : null,
+            'precio_venta' => self::entero($this->precio_venta),
+            'precio_metro' => $this->seCorta() ? self::entero($this->precio_metro) : null,
+            'precio_mayorista' => self::entero($this->precio_mayorista),
+            'costo' => self::entero($this->costo),
+            'foto' => $this->foto,
+        ], [
+            'id_familia' => ['required', Rule::exists('familia', 'id_familia')->where('activo', 'S')],
+            'altura' => ['nullable', 'integer', 'between:1,9999'],
+            'abertura' => ['nullable', 'string', 'max:20'],
+            'calibre' => ['nullable', 'string', 'max:10'],
+            'unidad_venta' => ['required', Rule::in(array_keys(Producto::UNIDADES))],
+            // RN-02: si se corta por metro, el rollo necesita su metraje y el precio del metro.
+            'metraje' => [Rule::requiredIf($this->seCorta()), 'nullable', 'integer', 'between:1,9999'],
+            'precio_venta' => ['required', 'integer', 'min:1'],
+            'precio_metro' => [Rule::requiredIf($this->seCorta()), 'nullable', 'integer', 'min:1'],
+            'precio_mayorista' => ['nullable', 'integer', 'min:1'],
+            'costo' => ['nullable', 'integer', 'min:0'],
+            'foto' => ['nullable', 'image', 'max:2048'],
+        ], [
+            'id_familia.required' => 'Elegí la familia.',
+            'id_familia.exists' => 'Elegí la familia.',
+            'altura.*' => 'Escribí la altura en centímetros, por ejemplo 150.',
+            'abertura.max' => 'La abertura puede tener hasta 20 letras.',
+            'calibre.max' => 'El calibre puede tener hasta 10 letras.',
+            'unidad_venta.*' => 'Elegí la unidad de venta.',
+            'metraje.required' => 'Escribí cuántos metros trae el rollo.',
+            'metraje.*' => 'Escribí los metros del rollo, por ejemplo 50.',
+            'precio_venta.*' => 'Escribí el precio.',
+            'precio_metro.*' => 'Escribí el precio por metro.',
+            'precio_mayorista.*' => 'Revisá el precio mayorista.',
+            'costo.*' => 'Revisá el costo.',
+            'foto.*' => 'La foto tiene que ser una imagen liviana.',
+        ])->validate();
+
+        $familia = $this->familias->firstWhere('id_familia', $datos['id_familia']);
+        $codigo = Producto::armarCodigo(
+            $familia,
+            $datos['abertura'],
+            $datos['calibre'],
+            $datos['altura'],
+            $datos['unidad_venta'],
+            $datos['metraje'],
+        );
+
+        $repetido = Producto::where('codigo', $codigo)
+            ->when($this->producto, fn ($query) => $query->whereKeyNot($this->producto->id_producto))
+            ->exists();
+
+        if ($repetido) {
+            $this->addError('codigo', "Ya hay un producto con el código {$codigo}. Revisá la altura, la abertura, el calibre o la presentación.");
+
+            return;
+        }
+
+        $medidas = Producto::armarMedidas($datos['abertura'], $datos['calibre'], $datos['altura'], $datos['metraje']);
+
+        $producto = $this->producto ?? new Producto(['activo' => 'S']);
+        $fotoAnterior = $producto->foto;
+
+        $producto->fill([
+            'codigo' => $codigo,
+            'descripcion' => Str::limit(trim($familia->nombre.' '.$medidas), 150, ''),
+            'id_familia' => $familia->id_familia,
+            'unidad_venta' => $datos['unidad_venta'],
+            'fraccionable' => $this->seCorta() ? 'S' : 'N',
+            'metraje_rollo' => $datos['metraje'],
+            'altura_cm' => $datos['altura'],
+            'abertura' => $datos['abertura'],
+            'calibre' => $datos['calibre'],
+            'precio_venta' => $datos['precio_venta'],
+            'precio_metro' => $datos['precio_metro'],
+            'precio_mayorista' => $datos['precio_mayorista'],
+            'costo' => $datos['costo'],
+        ]);
+
+        if ($this->foto) {
+            $producto->foto = $this->foto->store('productos', 'local');
+        }
+
+        try {
+            $producto->save();
+        } catch (\Throwable $error) {
+            if ($this->foto) {
+                Storage::disk('local')->delete($producto->foto);
+            }
+
+            throw $error;
+        }
+
+        if ($this->foto && $fotoAnterior) {
+            Storage::disk('local')->delete($fotoAnterior);
+        }
+
+        $this->redirectRoute('productos.catalogo', navigate: true);
+    }
+
+    public function render(): View
+    {
+        return view('livewire.productos.formulario')
+            ->title($this->producto ? 'Editar producto' : 'Nuevo producto');
+    }
+
+    /**
+     * Pasa "1.134.000" a 1134000. Vacío queda en null.
+     */
+    private static function entero(string $texto): ?int
+    {
+        $digitos = preg_replace('/\D/', '', $texto);
+
+        return $digitos === '' ? null : (int) $digitos;
+    }
+}

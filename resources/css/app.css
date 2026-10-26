@@ -12,10 +12,28 @@
     src: url('../fonts/inter-latin.woff2') format('woff2');
 }
 
+/* Archivo (latin, variable), la de los títulos del prototipo. */
+@font-face {
+    font-family: 'Archivo';
+    font-style: normal;
+    font-weight: 600 700;
+    font-display: swap;
+    src: url('../fonts/archivo-latin.woff2') format('woff2');
+}
+
 @theme {
     --font-sans: Inter, system-ui, sans-serif;
+    --font-titulo: Archivo, system-ui, sans-serif;
 }
 
 body {
     -webkit-font-smoothing: antialiased;
+}
+
+/* Barra lateral achicada a solo íconos (pantalla grande), como el
+   "sidebar mini" de AdminLTE. La clase va en <html>. */
+@custom-variant mini (.menu-mini &);
+
+[x-cloak] {
+    display: none !important;
 }

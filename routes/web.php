@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Auth\IngresoController;
+use App\Http\Controllers\ProductoFotoController;
+use App\Livewire\Productos\Catalogo;
+use App\Livewire\Productos\Formulario;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -12,4 +15,9 @@ Route::middleware('auth')->group(function () {
     // Provisorio: la pantalla de Inicio llega con su propia tarea.
     Route::get('/', fn () => view('inicio'))->name('inicio');
     Route::post('/salir', [IngresoController::class, 'destroy'])->name('logout');
+
+    Route::livewire('/productos', Catalogo::class)->name('productos.catalogo');
+    Route::livewire('/productos/nuevo', Formulario::class)->name('productos.nuevo');
+    Route::livewire('/productos/{producto}/editar', Formulario::class)->name('productos.editar');
+    Route::get('/productos/{producto}/foto', ProductoFotoController::class)->name('productos.foto');
 });
