@@ -7,7 +7,7 @@
     $modulos = [
         ['nombre' => 'Inicio', 'ruta' => 'inicio', 'activa' => 'inicio', 'icono' => '<path d="M3 10.5 12 3l9 7.5V21H3z"/>'],
         ['nombre' => 'Pedidos', 'ruta' => null, 'activa' => 'pedidos.*', 'icono' => '<path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6"/>'],
-        ['nombre' => 'Clientes', 'ruta' => null, 'activa' => 'clientes.*', 'icono' => '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.7 3 2.4 3.5 5.2"/>'],
+        ['nombre' => 'Clientes', 'ruta' => 'clientes.listado', 'activa' => 'clientes.*', 'icono' => '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.7 3 2.4 3.5 5.2"/>'],
         ['nombre' => 'Stock', 'ruta' => null, 'activa' => 'stock.*', 'icono' => '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>'],
         ['nombre' => 'Catálogo', 'ruta' => 'productos.catalogo', 'activa' => 'productos.*', 'icono' => '<path d="M4 7h16M4 12h16M4 17h16"/>'],
         ['nombre' => 'Resultado del mes', 'ruta' => null, 'activa' => 'reportes.*', 'icono' => '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'],
