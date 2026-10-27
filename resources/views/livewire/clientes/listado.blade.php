@@ -65,10 +65,6 @@
                 @endif
             </div>
         @endif
-
-        <p class="m-0 text-[13px] leading-normal text-[#5A5A54]">
-            Para dar de alta un cliente alcanza con el nombre. El teléfono y la dirección se pueden cargar después.
-        </p>
     </div>
 
     {{-- En el celular el botón queda abajo, a mano del pulgar, como en el prototipo. --}}

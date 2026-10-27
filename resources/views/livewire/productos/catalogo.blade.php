@@ -94,10 +94,6 @@
                 @endif
             </div>
         @endforelse
-
-        <p class="m-0 text-[13px] leading-normal text-[#5A5A54]">
-            Cada altura y cada presentación es un producto distinto, porque tienen precio y stock propios.
-        </p>
     </div>
 
     {{-- En el celular el botón queda abajo, a mano del pulgar, como en el prototipo. --}}

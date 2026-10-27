@@ -2,7 +2,6 @@
     $etiqueta = 'mb-1.5 block text-[13px] font-medium text-[#44443F]';
     $campo = 'min-h-12 w-full rounded-[10px] border border-[#D5D5CF] bg-white px-3 text-[15px] text-[#141413] outline-none focus:border-[#141413] aria-invalid:border-[#B3261E]';
     $tarjeta = 'flex flex-col gap-3 rounded-[10px] border border-[#E3E3DE] bg-white px-4 py-3.5';
-    $ayuda = 'mt-1.5 text-[13px] leading-normal text-[#5A5A54]';
     $error = 'mt-1.5 text-[13px] leading-normal text-[#B3261E]';
 @endphp
 
@@ -22,11 +21,7 @@
                 <input id="nombre" type="text" maxlength="120" autocomplete="off" wire:model="nombre"
                     @unless ($cliente) autofocus @endunless
                     @error('nombre') aria-invalid="true" @enderror class="{{ $campo }}">
-                @error('nombre')
-                    <div class="{{ $error }}">{{ $message }}</div>
-                @else
-                    <div class="{{ $ayuda }}">Es lo único obligatorio. Lo demás se puede cargar después.</div>
-                @enderror
+                @error('nombre') <div class="{{ $error }}">{{ $message }}</div> @enderror
             </div>
         </div>
 
@@ -49,11 +44,7 @@
                 <label for="direccion" class="{{ $etiqueta }}">Dirección de entrega</label>
                 <input id="direccion" type="text" maxlength="200" autocomplete="off" wire:model="direccion_entrega"
                     @error('direccion_entrega') aria-invalid="true" @enderror class="{{ $campo }}">
-                @error('direccion_entrega')
-                    <div class="{{ $error }}">{{ $message }}</div>
-                @else
-                    <div class="{{ $ayuda }}">La ciudad o la referencia para llevar el pedido.</div>
-                @enderror
+                @error('direccion_entrega') <div class="{{ $error }}">{{ $message }}</div> @enderror
             </div>
         </div>
 

@@ -3,7 +3,6 @@
     $campo = 'min-h-12 w-full rounded-[10px] border border-[#D5D5CF] bg-white px-3 text-[15px] text-[#141413] outline-none focus:border-[#141413] aria-invalid:border-[#B3261E]';
     $campoPrecio = str_replace('text-[15px]', 'text-[17px] font-semibold', $campo);
     $tarjeta = 'flex flex-col gap-3 rounded-[10px] border border-[#E3E3DE] bg-white px-4 py-3.5';
-    $ayuda = 'mt-1.5 text-[13px] leading-normal text-[#5A5A54]';
     $error = 'mt-1.5 text-[13px] leading-normal text-[#B3261E]';
     $precioUnidad = [
         'ROLLO' => 'Precio del rollo',
@@ -74,11 +73,7 @@
                 <div>
                     <label for="metraje" class="{{ $etiqueta }}">Metros que trae el rollo</label>
                     <input id="metraje" type="text" inputmode="numeric" wire:model.live.debounce.400ms="metraje" @error('metraje') aria-invalid="true" @enderror class="{{ $campo }}">
-                    @error('metraje')
-                        <div class="{{ $error }}">{{ $message }}</div>
-                    @else
-                        <div class="{{ $ayuda }}">Obligatorio si se corta por metro.</div>
-                    @enderror
+                    @error('metraje') <div class="{{ $error }}">{{ $message }}</div> @enderror
                 </div>
             @endif
         </div>
@@ -97,11 +92,7 @@
                 <div>
                     <label for="pmetro" class="{{ $etiqueta }}">Precio por metro</label>
                     <input id="pmetro" type="text" inputmode="numeric" wire:model.live.blur="precio_metro" @error('precio_metro') aria-invalid="true" @enderror class="{{ $campoPrecio }}">
-                    @error('precio_metro')
-                        <div class="{{ $error }}">{{ $message }}</div>
-                    @else
-                        <div class="{{ $ayuda }}">Se carga tal como figura en la lista. El sistema no lo calcula solo.</div>
-                    @enderror
+                    @error('precio_metro') <div class="{{ $error }}">{{ $message }}</div> @enderror
                 </div>
             @endif
             <div class="flex gap-2.5">
