@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
- * Cliente (tabla CLIENTE del DER). Solo el nombre es obligatorio; el
- * documento, el teléfono y la dirección se pueden cargar después (DD-10).
+ * Cliente (tabla CLIENTE del DER). El formulario pide todos los campos; en
+ * la base solo el nombre es NOT NULL, así los clientes cargados antes sin
+ * documento, teléfono o dirección siguen siendo válidos (DD-10).
  */
 class Cliente extends Model
 {

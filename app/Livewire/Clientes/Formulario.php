@@ -45,7 +45,7 @@ class Formulario extends Component
 
     public function guardar(): void
     {
-        // Los espacios de más se quitan; un campo vacío se guarda como nulo.
+        // Los espacios de más se quitan; un campo con solo espacios cuenta como vacío.
         $limpiar = fn (string $texto) => preg_replace('/\s+/', ' ', trim($texto)) ?: null;
 
         $datos = Validator::make([
@@ -55,11 +55,14 @@ class Formulario extends Component
             'direccion_entrega' => $limpiar($this->direccion_entrega),
         ], [
             'nombre' => ['required', 'string', 'max:120'],
-            'documento' => ['nullable', 'string', 'max:20'],
-            'telefono' => ['nullable', 'string', 'max:30'],
-            'direccion_entrega' => ['nullable', 'string', 'max:200'],
+            'documento' => ['required', 'string', 'max:20'],
+            'telefono' => ['required', 'string', 'max:30'],
+            'direccion_entrega' => ['required', 'string', 'max:200'],
         ], [
             'nombre.required' => 'Escribí el nombre del cliente.',
+            'documento.required' => 'Escribí la cédula o el RUC del cliente.',
+            'telefono.required' => 'Escribí el teléfono del cliente.',
+            'direccion_entrega.required' => 'Escribí la dirección de entrega.',
             'nombre.max' => 'El nombre puede tener hasta 120 letras.',
             'documento.max' => 'El documento puede tener hasta 20 caracteres.',
             'telefono.max' => 'El teléfono puede tener hasta 30 caracteres.',
