@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Producto (tabla PRODUCTO del DER). Una fila por variante comercial: cada
@@ -24,6 +26,14 @@ class Producto extends Model
         'METRO' => 'Metro',
         'KILO' => 'Kilo',
         'UNIDAD' => 'Unidad',
+    ];
+
+    /** Singular y plural de cada unidad, para escribir cantidades. */
+    private const NOMBRES_UNIDAD = [
+        'ROLLO' => ['rollo', 'rollos'],
+        'METRO' => ['metro', 'metros'],
+        'KILO' => ['kilo', 'kilos'],
+        'UNIDAD' => ['unidad', 'unidades'],
     ];
 
     protected $fillable = [
@@ -59,6 +69,21 @@ class Producto extends Model
     public function familia(): BelongsTo
     {
         return $this->belongsTo(Familia::class, 'id_familia', 'id_familia');
+    }
+
+    public function stock(): HasOne
+    {
+        return $this->hasOne(Stock::class, 'id_producto', 'id_producto');
+    }
+
+    public function rollosAbiertos(): HasMany
+    {
+        return $this->hasMany(RolloAbierto::class, 'id_producto', 'id_producto')->abiertos();
+    }
+
+    public function movimientos(): HasMany
+    {
+        return $this->hasMany(MovimientoStock::class, 'id_producto', 'id_producto');
     }
 
     public function scopeActivos(Builder $query): void
@@ -125,6 +150,25 @@ class Producto extends Model
         ]);
 
         return implode(' · ', array_filter([$malla, implode(' × ', $tamano)]));
+    }
+
+    /**
+     * Cómo se nombran las piezas de este producto en plural: rollos, kilos,
+     * unidades.
+     */
+    public function nombrePiezas(): string
+    {
+        return self::NOMBRES_UNIDAD[$this->unidad_venta][1];
+    }
+
+    /**
+     * Cantidad de piezas con su unidad: "1 rollo", "12 kilos", "3 unidades".
+     */
+    public static function cantidadConUnidad(int|float $cantidad, string $unidad): string
+    {
+        [$singular, $plural] = self::NOMBRES_UNIDAD[$unidad];
+
+        return Stock::formatearCantidad($cantidad).' '.($cantidad == 1 ? $singular : $plural);
     }
 
     public static function formatearPrecio(?int $precio): string
