@@ -39,7 +39,7 @@
             <div class="flex gap-2.5">
                 <div class="min-w-0 flex-1">
                     <label for="altura" class="{{ $etiqueta }}">Altura (cm)</label>
-                    <input id="altura" type="text" inputmode="numeric" wire:model.live.debounce.400ms="altura" @error('altura') aria-invalid="true" @enderror class="{{ $campo }}">
+                    <input id="altura" type="text" inputmode="numeric" data-solo="numeros" wire:model.live.debounce.400ms="altura" @error('altura') aria-invalid="true" @enderror class="{{ $campo }}">
                     @error('altura') <div class="{{ $error }}">{{ $message }}</div> @enderror
                 </div>
                 <div class="min-w-0 flex-1">
@@ -72,7 +72,7 @@
                 </div>
                 <div>
                     <label for="metraje" class="{{ $etiqueta }}">Metros que trae el rollo</label>
-                    <input id="metraje" type="text" inputmode="numeric" wire:model.live.debounce.400ms="metraje" @error('metraje') aria-invalid="true" @enderror class="{{ $campo }}">
+                    <input id="metraje" type="text" inputmode="numeric" data-solo="numeros" wire:model.live.debounce.400ms="metraje" @error('metraje') aria-invalid="true" @enderror class="{{ $campo }}">
                     @error('metraje') <div class="{{ $error }}">{{ $message }}</div> @enderror
                 </div>
             @endif
@@ -85,25 +85,25 @@
         <div class="{{ $tarjeta }}">
             <div>
                 <label for="precio" class="{{ $etiqueta }}">{{ $precioUnidad }}</label>
-                <input id="precio" type="text" inputmode="numeric" wire:model.live.blur="precio_venta" @error('precio_venta') aria-invalid="true" @enderror class="{{ $campoPrecio }}">
+                <input id="precio" type="text" inputmode="numeric" data-solo="numeros" wire:model.live.blur="precio_venta" @error('precio_venta') aria-invalid="true" @enderror class="{{ $campoPrecio }}">
                 @error('precio_venta') <div class="{{ $error }}">{{ $message }}</div> @enderror
             </div>
             @if ($this->seCorta())
                 <div>
                     <label for="pmetro" class="{{ $etiqueta }}">Precio por metro</label>
-                    <input id="pmetro" type="text" inputmode="numeric" wire:model.live.blur="precio_metro" @error('precio_metro') aria-invalid="true" @enderror class="{{ $campoPrecio }}">
+                    <input id="pmetro" type="text" inputmode="numeric" data-solo="numeros" wire:model.live.blur="precio_metro" @error('precio_metro') aria-invalid="true" @enderror class="{{ $campoPrecio }}">
                     @error('precio_metro') <div class="{{ $error }}">{{ $message }}</div> @enderror
                 </div>
             @endif
             <div class="flex gap-2.5">
                 <div class="min-w-0 flex-1">
                     <label for="pmay" class="{{ $etiqueta }}">Mayorista</label>
-                    <input id="pmay" type="text" inputmode="numeric" wire:model.live.blur="precio_mayorista" @error('precio_mayorista') aria-invalid="true" @enderror class="{{ $campo }}">
+                    <input id="pmay" type="text" inputmode="numeric" data-solo="numeros" wire:model.live.blur="precio_mayorista" @error('precio_mayorista') aria-invalid="true" @enderror class="{{ $campo }}">
                     @error('precio_mayorista') <div class="{{ $error }}">{{ $message }}</div> @enderror
                 </div>
                 <div class="min-w-0 flex-1">
                     <label for="costo" class="{{ $etiqueta }}">Costo</label>
-                    <input id="costo" type="text" inputmode="numeric" wire:model.live.blur="costo" @error('costo') aria-invalid="true" @enderror class="{{ $campo }}">
+                    <input id="costo" type="text" inputmode="numeric" data-solo="numeros" wire:model.live.blur="costo" @error('costo') aria-invalid="true" @enderror class="{{ $campo }}">
                     @error('costo') <div class="{{ $error }}">{{ $message }}</div> @enderror
                 </div>
             </div>
@@ -149,6 +149,27 @@
     </div>
 
     {{-- En el celular el botón queda fijo abajo; desde tablet, a la derecha al final. --}}
+    @if ($producto)
+        {{-- Baja lógica: el producto no se borra nunca, porque puede estar en pedidos. --}}
+        @php $activo = $producto->activo === 'S'; @endphp
+        <div class="mb-4 flex flex-col gap-2 rounded-[10px] border border-[#E3E3DE] bg-white px-4 py-3.5 sm:mt-4 sm:mb-0 sm:flex-row sm:items-center sm:justify-between">
+            <div class="text-sm leading-normal text-[#5A5A54]">
+                {{ $activo
+                    ? 'Dar de baja lo saca del catálogo y del stock. No se borra: queda en los pedidos ya hechos.'
+                    : 'Este producto está dado de baja: no aparece en el catálogo ni en el stock.' }}
+            </div>
+            <button type="button" wire:click="cambiarEstado"
+                @if ($activo) wire:confirm="¿Dar de baja {{ $producto->codigo }}?" @endif
+                @class([
+                    'min-h-11 flex-none cursor-pointer rounded-[10px] border bg-white px-5 text-[15px] font-semibold',
+                    'border-[#B3261E] text-[#B3261E] hover:bg-[#B3261E]/5' => $activo,
+                    'border-[#2F6B45] text-[#2F6B45] hover:bg-[#2F6B45]/5' => ! $activo,
+                ])>
+                {{ $activo ? 'Dar de baja' : 'Volver a activar' }}
+            </button>
+        </div>
+    @endif
+
     <div class="sticky bottom-0 -mx-4 mt-auto border-t border-[#E3E3DE] bg-white px-4 pt-3 pb-4 sm:static sm:mx-0 sm:mt-4 sm:flex sm:justify-end sm:gap-2.5 sm:border-0 sm:bg-transparent sm:p-0 lg:mt-5">
         <a href="{{ route('productos.catalogo') }}" wire:navigate
             class="hidden min-h-11 items-center rounded-[10px] border border-[#D5D5CF] bg-white px-5 text-[15px] font-semibold text-[#141413] no-underline hover:bg-[#FAFAF8] sm:inline-flex">

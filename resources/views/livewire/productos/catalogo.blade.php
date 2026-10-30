@@ -5,7 +5,13 @@
 
 <div class="flex max-w-[1200px] flex-1 flex-col px-4 pt-4 sm:pb-6 lg:px-8 lg:pt-6 lg:pb-10">
 
-    <x-encabezado titulo="Catálogo" :migas="[['Inicio', route('inicio')], ['Catálogo']]" />
+    <x-encabezado :titulo="$bajas ? 'Productos dados de baja' : 'Catálogo'" :migas="[['Inicio', route('inicio')], ['Catálogo']]" />
+
+    @if (session('aviso'))
+        <div role="status" class="mb-3.5 rounded-[10px] border border-[#2F6B45]/30 bg-[#2F6B45]/8 px-4 py-3 text-sm font-medium text-[#2F6B45]">
+            {{ session('aviso') }}
+        </div>
+    @endif
 
     <div class="flex flex-wrap items-center justify-between gap-2.5">
         <label for="busqueda" class="sr-only">Buscar en el catálogo</label>
@@ -89,11 +95,18 @@
             <div class="rounded-[10px] border border-[#E3E3DE] bg-white px-4 py-8 text-center text-sm leading-normal text-[#5A5A54]">
                 @if (trim($busqueda) !== '' || $familia)
                     No hay productos que coincidan con la búsqueda.
+                @elseif ($bajas)
+                    No hay productos dados de baja.
                 @else
                     Todavía no hay productos cargados.
                 @endif
             </div>
         @endforelse
+
+        <button type="button" wire:click="$toggle('bajas')"
+            class="min-h-11 cursor-pointer self-start border-0 bg-transparent p-0 text-sm font-medium text-[#44443F] underline underline-offset-2 hover:text-[#141413]">
+            {{ $bajas ? 'Volver a los productos activos' : 'Ver productos dados de baja' }}
+        </button>
     </div>
 
     {{-- En el celular el botón queda abajo, a mano del pulgar, como en el prototipo. --}}

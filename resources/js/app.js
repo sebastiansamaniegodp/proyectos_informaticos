@@ -53,6 +53,35 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 
+// Campos que solo aceptan ciertos caracteres: <input data-solo="numeros">.
+// Lo que no corresponde se borra al escribir o pegar, antes de que Livewire
+// lo lea (el servidor igual lo vuelve a validar).
+//   enteros  → solo dígitos (piezas)
+//   numeros  → dígitos y puntos de miles (alturas, precios)
+//   decimal  → dígitos y una coma o punto decimal (metros)
+//   telefono → dígitos, espacios, +, - y paréntesis
+//   documento → dígitos y el guion del dígito verificador del RUC
+const PERMITIDOS = {
+    enteros: /\D/g,
+    numeros: /[^\d.]/g,
+    decimal: /[^\d.,]/g,
+    telefono: /[^\d\s+()-]/g,
+    documento: /[^\d-]/g,
+};
+
+document.addEventListener('input', (evento) => {
+    const campo = evento.target;
+    const patron = PERMITIDOS[campo.dataset?.solo];
+    if (!patron) return;
+
+    const limpio = campo.value.replace(patron, '');
+    if (limpio !== campo.value) {
+        const cursor = Math.max(0, (campo.selectionStart ?? limpio.length) - (campo.value.length - limpio.length));
+        campo.value = limpio;
+        campo.setSelectionRange?.(cursor, cursor);
+    }
+}, true);
+
 async function achicar(archivo, ladoMaximo) {
     const imagen = await createImageBitmap(archivo);
     const escala = Math.min(1, ladoMaximo / Math.max(imagen.width, imagen.height));

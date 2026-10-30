@@ -29,13 +29,13 @@
             <div class="flex flex-col gap-3 sm:flex-row sm:gap-2.5">
                 <div class="min-w-0 flex-1">
                     <label for="telefono" class="{{ $etiqueta }}">Teléfono</label>
-                    <input id="telefono" type="tel" maxlength="30" autocomplete="off" wire:model="telefono"
+                    <input id="telefono" type="tel" inputmode="tel" data-solo="telefono" maxlength="30" autocomplete="off" wire:model="telefono"
                         @error('telefono') aria-invalid="true" @enderror class="{{ $campo }}">
                     @error('telefono') <div class="{{ $error }}">{{ $message }}</div> @enderror
                 </div>
                 <div class="min-w-0 flex-1">
                     <label for="documento" class="{{ $etiqueta }}">Cédula o RUC</label>
-                    <input id="documento" type="text" maxlength="20" autocomplete="off" wire:model="documento"
+                    <input id="documento" type="text" data-solo="documento" maxlength="20" autocomplete="off" wire:model="documento"
                         @error('documento') aria-invalid="true" @enderror class="{{ $campo }}">
                     @error('documento') <div class="{{ $error }}">{{ $message }}</div> @enderror
                 </div>

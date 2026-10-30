@@ -40,7 +40,7 @@
 
             <div>
                 <label for="cantidad" class="{{ $etiqueta }}">Cantidad de {{ $producto->nombrePiezas() }}</label>
-                <input id="cantidad" type="text" inputmode="numeric" autocomplete="off" wire:model="cantidad" autofocus
+                <input id="cantidad" type="text" inputmode="numeric" data-solo="enteros" maxlength="5" autocomplete="off" wire:model="cantidad" autofocus
                     @error('cantidad') aria-invalid="true" @enderror class="{{ $campo }} sm:max-w-[200px]">
                 @error('cantidad')
                     <div class="{{ $error }}">{{ $message }}</div>

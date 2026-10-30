@@ -113,7 +113,7 @@
                     {{ $enMetros ? 'Metros' : 'Cantidad de '.$producto->nombrePiezas() }}
                     {{ $entra ? 'que sobran' : 'que salen' }}
                 </label>
-                <input id="cantidad" type="text" inputmode="{{ $enMetros ? 'decimal' : 'numeric' }}" autocomplete="off" wire:model="cantidad"
+                <input id="cantidad" type="text" inputmode="{{ $enMetros ? 'decimal' : 'numeric' }}" data-solo="{{ $enMetros ? 'decimal' : 'enteros' }}" maxlength="{{ $enMetros ? 7 : 5 }}" autocomplete="off" wire:model="cantidad"
                     @error('cantidad') aria-invalid="true" @enderror class="{{ $campo }} sm:max-w-[200px]">
                 @error('cantidad') <div class="{{ $error }}">{{ $message }}</div> @enderror
             </div>

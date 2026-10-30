@@ -134,44 +134,65 @@ class Formulario extends Component
 
     public function guardar(): void
     {
+        $familiaElegida = $this->familias->firstWhere('id_familia', $this->id_familia);
+
         $datos = Validator::make([
             'id_familia' => $this->id_familia,
-            'altura' => self::entero($this->altura),
+            'altura' => self::numero($this->altura),
             'abertura' => trim($this->abertura) ?: null,
             'calibre' => trim($this->calibre) ?: null,
             'unidad_venta' => $this->unidad_venta,
-            'metraje' => $this->esRollo() ? self::entero($this->metraje) : null,
-            'precio_venta' => self::entero($this->precio_venta),
-            'precio_metro' => $this->seCorta() ? self::entero($this->precio_metro) : null,
-            'precio_mayorista' => self::entero($this->precio_mayorista),
-            'costo' => self::entero($this->costo),
+            'metraje' => $this->esRollo() ? self::numero($this->metraje) : null,
+            'precio_venta' => self::numero($this->precio_venta),
+            'precio_metro' => $this->seCorta() ? self::numero($this->precio_metro) : null,
+            'precio_mayorista' => self::numero($this->precio_mayorista),
+            'costo' => self::numero($this->costo),
             'foto' => $this->foto,
         ], [
             'id_familia' => ['required', Rule::exists('familia', 'id_familia')->where('activo', 'S')],
-            'altura' => ['nullable', 'integer', 'between:1,9999'],
-            'abertura' => ['nullable', 'string', 'max:20'],
-            'calibre' => ['nullable', 'string', 'max:10'],
+            'altura' => ['nullable', 'integer', 'between:10,1000'],
+            'abertura' => ['nullable', 'string', 'max:20', function ($atributo, $valor, $fallar) use ($familiaElegida) {
+                // DD-16: el hexagonal en pulgadas; la malla del resto, en centímetros.
+                if ($familiaElegida?->prefijoCodigo() === 'HEX') {
+                    if (! preg_match('/^(\d+|\d+\s*\/\s*\d+|\d+\s+\d+\s*\/\s*\d+|\d*\s*[½¼¾])\s*("|”|\'\'|pulg\.?)$/u', $valor)) {
+                        $fallar('En el hexagonal la abertura va en pulgadas, por ejemplo 1/2" o 2".');
+                    }
+                } elseif (! preg_match('/^\d+([.,]\d+)?(\s*x\s*\d+([.,]\d+)?)?\s*cm$/iu', $valor)) {
+                    $fallar('La abertura va en centímetros, por ejemplo 5 cm o 5 x 5 cm.');
+                }
+            }],
+            'calibre' => ['nullable', 'string', 'max:10', 'regex:/\d/'],
             'unidad_venta' => ['required', Rule::in(array_keys(Producto::UNIDADES))],
             // RN-02: si se corta por metro, el rollo necesita su metraje y el precio del metro.
-            'metraje' => [Rule::requiredIf($this->seCorta()), 'nullable', 'integer', 'between:1,9999'],
-            'precio_venta' => ['required', 'integer', 'min:1'],
-            'precio_metro' => [Rule::requiredIf($this->seCorta()), 'nullable', 'integer', 'min:1'],
-            'precio_mayorista' => ['nullable', 'integer', 'min:1'],
-            'costo' => ['nullable', 'integer', 'min:0'],
+            'metraje' => [Rule::requiredIf($this->seCorta()), 'nullable', 'integer', 'between:1,1000'],
+            'precio_venta' => ['required', 'integer', 'min:1', 'max:999999999'],
+            // El metro cortado cuesta menos que el rollo entero, y el mayorista no supera al de lista.
+            'precio_metro' => [Rule::requiredIf($this->seCorta()), 'nullable', 'integer', 'min:1', 'lt:precio_venta'],
+            'precio_mayorista' => ['nullable', 'integer', 'min:1', 'lte:precio_venta'],
+            // Sin costo el resultado del mes no puede calcular la utilidad (RN-33).
+            'costo' => ['required', 'integer', 'min:0', 'max:999999999'],
             'foto' => ['nullable', 'image', 'max:2048'],
         ], [
             'id_familia.required' => 'Elegí la familia.',
             'id_familia.exists' => 'Elegí la familia.',
-            'altura.*' => 'Escribí la altura en centímetros, por ejemplo 150.',
+            'altura.integer' => 'La altura va solo con números, en centímetros. Por ejemplo 150.',
+            'altura.between' => 'La altura va en centímetros, entre 10 y 1000. Por ejemplo 150 para 1,50 m.',
             'abertura.max' => 'La abertura puede tener hasta 20 letras.',
             'calibre.max' => 'El calibre puede tener hasta 10 letras.',
+            'calibre.regex' => 'El calibre lleva el número, por ejemplo n° 16.',
             'unidad_venta.*' => 'Elegí la unidad de venta.',
             'metraje.required' => 'Escribí cuántos metros trae el rollo.',
-            'metraje.*' => 'Escribí los metros del rollo, por ejemplo 50.',
-            'precio_venta.*' => 'Escribí el precio.',
-            'precio_metro.*' => 'Escribí el precio por metro.',
-            'precio_mayorista.*' => 'Revisá el precio mayorista.',
-            'costo.*' => 'Revisá el costo.',
+            'metraje.integer' => 'Los metros del rollo van solo con números, por ejemplo 50.',
+            'metraje.between' => 'Los metros del rollo van entre 1 y 1000.',
+            'precio_venta.required' => 'Escribí el precio.',
+            'precio_venta.*' => 'El precio va solo con números, por ejemplo 1.134.000.',
+            'precio_metro.required' => 'Escribí el precio por metro.',
+            'precio_metro.lt' => 'El precio por metro tiene que ser menor que el del rollo entero.',
+            'precio_metro.*' => 'El precio por metro va solo con números, por ejemplo 25.000.',
+            'precio_mayorista.lte' => 'El precio mayorista no puede ser mayor que el de lista.',
+            'precio_mayorista.*' => 'El precio mayorista va solo con números.',
+            'costo.required' => 'Escribí el costo. Sin costo no se puede calcular la utilidad.',
+            'costo.*' => 'El costo va solo con números.',
             'foto.*' => 'La foto tiene que ser una imagen liviana.',
         ])->validate();
 
@@ -237,6 +258,27 @@ class Formulario extends Component
         $this->redirectRoute('productos.catalogo', navigate: true);
     }
 
+    /**
+     * Baja lógica: el producto deja de aparecer en el catálogo y en el stock,
+     * pero no se borra nunca, porque puede estar en pedidos ya hechos. Con
+     * la misma acción se vuelve a activar.
+     */
+    public function cambiarEstado(): void
+    {
+        if (! $this->producto) {
+            return;
+        }
+
+        $activo = $this->producto->activo === 'S';
+        $this->producto->update(['activo' => $activo ? 'N' : 'S']);
+
+        session()->flash('aviso', $activo
+            ? "Se dio de baja {$this->producto->codigo}. Se puede volver a activar desde los dados de baja."
+            : "Se volvió a activar {$this->producto->codigo}.");
+
+        $this->redirectRoute('productos.catalogo', navigate: true);
+    }
+
     public function render(): View
     {
         return view('livewire.productos.formulario')
@@ -251,5 +293,21 @@ class Formulario extends Component
         $digitos = preg_replace('/\D/', '', $texto);
 
         return $digitos === '' ? null : (int) $digitos;
+    }
+
+    /**
+     * Como entero(), pero para validar: si el texto trae algo que no son
+     * dígitos ni puntos de miles, lo devuelve tal cual para que la regla
+     * integer lo rechace en vez de quitarle las letras en silencio.
+     */
+    private static function numero(string $texto): int|string|null
+    {
+        $texto = trim($texto);
+
+        if ($texto !== '' && ! preg_match('/^[\d.\s]+$/', $texto)) {
+            return $texto;
+        }
+
+        return self::entero($texto);
     }
 }

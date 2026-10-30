@@ -4,6 +4,7 @@ namespace App\Livewire\Clientes;
 
 use App\Models\Cliente;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Component;
 
@@ -50,19 +51,36 @@ class Formulario extends Component
 
         $datos = Validator::make([
             'nombre' => $limpiar($this->nombre),
-            'documento' => $limpiar($this->documento),
+            // La cédula se suele escribir con puntos (4.567.890): se guardan solo los dígitos y el guion.
+            'documento' => $limpiar(str_replace(['.', ' '], '', $this->documento)),
             'telefono' => $limpiar($this->telefono),
             'direccion_entrega' => $limpiar($this->direccion_entrega),
         ], [
-            'nombre' => ['required', 'string', 'max:120'],
-            'documento' => ['required', 'string', 'max:20'],
-            'telefono' => ['required', 'string', 'max:30'],
-            'direccion_entrega' => ['required', 'string', 'max:200'],
+            'nombre' => ['required', 'string', 'min:2', 'max:120', 'regex:/\p{L}/u'],
+            // Cédula: solo dígitos. RUC: dígitos, guion y el dígito verificador.
+            'documento' => [
+                'required', 'string', 'max:20', 'regex:/^\d{5,10}(-\d)?$/',
+                Rule::unique('cliente', 'documento')->ignore($this->cliente?->id_cliente, 'id_cliente'),
+            ],
+            'telefono' => ['required', 'string', 'max:30', 'regex:/^\+?[\d\s()-]+$/', function ($atributo, $valor, $fallar) {
+                $digitos = strlen(preg_replace('/\D/', '', $valor));
+
+                if ($digitos < 6 || $digitos > 15) {
+                    $fallar('El teléfono tiene que tener entre 6 y 15 números, por ejemplo 0981 234 567.');
+                }
+            }],
+            'direccion_entrega' => ['required', 'string', 'min:3', 'max:200'],
         ], [
             'nombre.required' => 'Escribí el nombre del cliente.',
+            'nombre.min' => 'El nombre tiene que tener al menos 2 letras.',
+            'nombre.regex' => 'El nombre tiene que tener letras, no solo números.',
             'documento.required' => 'Escribí la cédula o el RUC del cliente.',
+            'documento.regex' => 'La cédula va solo con números (4567890); el RUC, con guion y dígito verificador (80012345-6).',
+            'documento.unique' => 'Ya hay un cliente con ese documento.',
             'telefono.required' => 'Escribí el teléfono del cliente.',
+            'telefono.regex' => 'El teléfono va solo con números, por ejemplo 0981 234 567.',
             'direccion_entrega.required' => 'Escribí la dirección de entrega.',
+            'direccion_entrega.min' => 'Escribí la dirección completa.',
             'nombre.max' => 'El nombre puede tener hasta 120 letras.',
             'documento.max' => 'El documento puede tener hasta 20 caracteres.',
             'telefono.max' => 'El teléfono puede tener hasta 30 caracteres.',

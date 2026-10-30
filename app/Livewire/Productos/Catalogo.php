@@ -24,6 +24,10 @@ class Catalogo extends Component
     #[Url(except: null)]
     public ?int $familia = null;
 
+    /** Muestra los dados de baja en lugar de los activos, para reactivarlos. */
+    #[Url(except: false)]
+    public bool $bajas = false;
+
     /**
      * Tocar la familia elegida otra vez quita el filtro.
      */
@@ -47,7 +51,7 @@ class Catalogo extends Component
     {
         $busqueda = trim($this->busqueda);
 
-        $productos = Producto::activos()
+        $productos = Producto::where('activo', $this->bajas ? 'N' : 'S')
             ->when($this->familia, fn ($query) => $query->where('id_familia', $this->familia))
             ->when($busqueda !== '', function ($query) use ($busqueda) {
                 $patron = '%'.addcslashes($busqueda, '%_\\').'%';

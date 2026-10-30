@@ -20,10 +20,12 @@ class IngresoController extends Controller
     {
         $datos = $request->validate([
             'username' => ['required', 'string', 'max:30'],
-            'password' => ['required', 'string'],
+            'password' => ['required', 'string', 'max:100'],
         ], [
             'username.required' => 'Escribí tu usuario.',
+            'username.max' => 'El usuario puede tener hasta 30 letras.',
             'password.required' => 'Escribí tu contraseña.',
+            'password.max' => 'La contraseña es demasiado larga.',
         ]);
 
         $credenciales = [
