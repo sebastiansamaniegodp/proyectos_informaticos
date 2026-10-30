@@ -81,8 +81,10 @@ class Formulario extends Component
         // de varios campos, así que se va con cualquier cambio.
         $this->resetErrorBag([$propiedad, 'codigo']);
 
-        if (in_array($propiedad, self::PRECIOS, true)) {
-            $this->{$propiedad} = Producto::formatearPrecio(self::entero($this->{$propiedad}));
+        // Solo se reformatea un número válido: con letras queda como está, para
+        // que al guardar se rechace en vez de quitarlas en silencio.
+        if (in_array($propiedad, self::PRECIOS, true) && ! is_string($numero = self::numero($this->{$propiedad}))) {
+            $this->{$propiedad} = Producto::formatearPrecio($numero);
         }
     }
 
