@@ -127,10 +127,6 @@
             @endif
         </section>
 
-        <p class="m-0 text-[13px] leading-normal text-[#5A5A54]">
-            Solo suman los pedidos cobrados, según su fecha de cobro. Los confirmados y los entregados sin cobrar todavía no aparecen. El costo es el que tenía cada producto al confirmarse el pedido.
-        </p>
-
         <a href="{{ route('pedidos.listado') }}" wire:navigate
             class="{{ $tarjeta }} flex items-center justify-between gap-3 px-4 py-3.5 text-inherit no-underline hover:bg-[#FAFAF8] lg:px-5">
             <span>

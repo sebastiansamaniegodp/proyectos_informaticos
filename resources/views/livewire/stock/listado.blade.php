@@ -96,10 +96,6 @@
                 @endif
             </div>
         @endforelse
-
-        <p class="m-0 text-[13px] leading-normal text-[#5A5A54]">
-            En los tejidos que se cortan, el disponible son los metros de los rollos cerrados más los que quedan en los abiertos.
-        </p>
     </div>
 
 </div>
