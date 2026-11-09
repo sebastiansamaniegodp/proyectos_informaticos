@@ -20,6 +20,14 @@
         ? route('pedidos.comprobante', $pedido)
         : null;
     $archivo = app(\App\Services\ComprobanteService::class)->nombreArchivo($pedido);
+
+    // Chat de WhatsApp del botón "Enviar comprobante". wa.me pide el número
+    // con código de país y sin el 0 inicial: 0971578168 → 595971578168.
+    $numero = preg_replace('/\D/', '', (string) config('negocio.whatsapp'));
+    $numero = str_starts_with($numero, '0') ? '595'.substr($numero, 1) : $numero;
+    $whatsapp = 'https://wa.me/'.$numero.'?text='.rawurlencode(
+        'Comprobante del Pedido N° '.$pedido->numero().' · '.config('negocio.nombre')
+    );
 @endphp
 
 <div class="flex max-w-[760px] flex-1 flex-col px-4 pt-4 sm:pb-6 lg:px-8 lg:pt-6 lg:pb-10">
@@ -126,23 +134,23 @@
 
         @if ($comprobante)
             {{-- La clave cambia con el estado: así el PDF que se prepara es siempre el del estado actual. --}}
-            <section wire:key="comprobante-{{ $estado }}" class="{{ $tarjeta }} px-4 py-3.5" x-data="compartirComprobante(@js($comprobante), @js($archivo), @js('Pedido N° '.$pedido->numero().' · Shopping de los Tejidos'))">
+            <section wire:key="comprobante-{{ $estado }}" class="{{ $tarjeta }} px-4 py-3.5" x-data="compartirComprobante(@js($comprobante), @js($archivo))">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="min-w-0">
                         <h2 class="{{ $titulo }}">Comprobante</h2>
                         <p class="m-0 mt-1 text-[13px] leading-normal text-[#5A5A54]">
-                            Genera el PDF y abre el menú de compartir del celular para mandarlo por WhatsApp. No tiene validez fiscal.
+                            Descarga el PDF y abre el chat de WhatsApp para adjuntarlo. No tiene validez fiscal.
                         </p>
                     </div>
                     <div class="flex flex-none gap-2.5">
                         <a href="{{ $comprobante }}?descargar=1" class="{{ $botonBlanco }}" download="{{ $archivo }}">Descargar</a>
-                        <button type="button" x-on:click="compartir()" x-bind:disabled="enviando" class="{{ $botonNegro }}">
+                        {{-- Es un enlace de verdad: el chat se abre aunque falle el JavaScript. --}}
+                        <a href="{{ $whatsapp }}" target="_blank" rel="noopener" x-on:click="adjuntar()" class="{{ $botonNegro }}">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13"/></svg>
-                            <span x-text="enviando ? 'Generando…' : 'Enviar comprobante'">Enviar comprobante</span>
-                        </button>
+                            Enviar comprobante
+                        </a>
                     </div>
                 </div>
-                <p x-show="error" x-cloak x-text="error" class="m-0 mt-2 text-[13px] text-[#B3261E]"></p>
             </section>
         @endif
 

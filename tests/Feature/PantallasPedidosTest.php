@@ -150,6 +150,7 @@ class PantallasPedidosTest extends TestCase
         Livewire::test(Detalle::class, ['pedido' => $pedido])
             ->assertSee('Marcar entregado')
             ->assertSee('Enviar comprobante')
+            ->assertSeeHtml('href="https://wa.me/595971578168?text=')
             ->call('marcarEntregado')
             ->assertSee('Registrar cobro')
             ->call('registrarCobro')

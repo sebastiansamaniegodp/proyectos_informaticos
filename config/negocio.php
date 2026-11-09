@@ -13,4 +13,9 @@ return [
     // del Guairá". Si queda vacía no se muestra.
     'contacto' => env('NEGOCIO_CONTACTO'),
 
+    // Número de WhatsApp al que se abre el chat desde el botón "Enviar
+    // comprobante" del pedido. Se escribe como se marca en Paraguay
+    // (0971 578 168) o con el código de país (595971578168).
+    'whatsapp' => env('NEGOCIO_WHATSAPP', '0971578168'),
+
 ];

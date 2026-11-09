@@ -18,57 +18,28 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
-    // Botón "Enviar comprobante" del pedido. Baja el PDF y abre el menú de
-    // compartir del celular (Web Share API), donde se elige WhatsApp. Si el
-    // navegador no puede compartir archivos (la mayoría de las computadoras),
-    // el PDF se descarga para adjuntarlo a mano.
+    // Botón "Enviar comprobante" del pedido. El botón es un enlace que abre
+    // el chat de WhatsApp del negocio (wa.me); acá solo se descarga el PDF en
+    // el mismo toque, para adjuntarlo en el chat. Un enlace de WhatsApp no
+    // puede llevar un archivo adjunto.
     //
-    // El PDF se pide apenas se abre el pedido: el navegador (sobre todo
-    // Safari) solo deja compartir justo después del toque, y si hubiera que
-    // esperar la descarga el menú no se abriría.
-    window.Alpine.data('compartirComprobante', (url, archivo, titulo) => ({
-        enviando: false,
-        error: '',
+    // El PDF se pide apenas se abre el pedido, así al tocar el botón ya está
+    // listo. Si todavía no llegó, queda el botón "Descargar" de al lado.
+    window.Alpine.data('compartirComprobante', (url, archivo) => ({
         pdf: null,
-        pedido: null,
 
-        init() {
-            this.pedido = this.bajar().catch(() => null);
+        async init() {
+            try {
+                const respuesta = await fetch(url, { credentials: 'same-origin' });
+                if (!respuesta.ok) return;
+                this.pdf = new File([await respuesta.blob()], archivo, { type: 'application/pdf' });
+            } catch {
+                // Sin conexión: el chat se abre igual.
+            }
         },
 
-        async bajar() {
-            const respuesta = await fetch(url, { credentials: 'same-origin' });
-            if (!respuesta.ok) throw new Error(String(respuesta.status));
-            this.pdf = new File([await respuesta.blob()], archivo, { type: 'application/pdf' });
-            return this.pdf;
-        },
-
-        async compartir() {
-            this.error = '';
-
-            let pdf = this.pdf;
-            if (!pdf) {
-                this.enviando = true;
-                pdf = (await this.pedido) ?? (await this.bajar().catch(() => null));
-                this.enviando = false;
-            }
-
-            if (!pdf) {
-                this.error = 'No se pudo generar el comprobante. Revisá la conexión y probá de nuevo.';
-                return;
-            }
-
-            if (navigator.canShare?.({ files: [pdf] })) {
-                try {
-                    await navigator.share({ files: [pdf], title: titulo });
-                } catch (error) {
-                    // Cerrar el menú sin elegir nada no es un error.
-                    if (error?.name !== 'AbortError') descargar(pdf);
-                }
-                return;
-            }
-
-            descargar(pdf);
+        adjuntar() {
+            if (this.pdf) descargar(this.pdf);
         },
     }));
 
