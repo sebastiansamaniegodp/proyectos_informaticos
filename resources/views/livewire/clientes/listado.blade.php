@@ -5,7 +5,13 @@
 
 <div class="flex max-w-[1200px] flex-1 flex-col px-4 pt-4 sm:pb-6 lg:px-8 lg:pt-6 lg:pb-10">
 
-    <x-encabezado titulo="Clientes" :migas="[['Inicio', route('inicio')], ['Clientes']]" />
+    <x-encabezado :titulo="$archivados ? 'Clientes archivados' : 'Clientes'" :migas="[['Inicio', route('inicio')], ['Clientes']]" />
+
+    @if (session('aviso'))
+        <div role="status" class="mb-3.5 rounded-[10px] border border-[#2F6B45]/30 bg-[#2F6B45]/8 px-4 py-3 text-sm font-medium text-[#2F6B45]">
+            {{ session('aviso') }}
+        </div>
+    @endif
 
     <div class="flex flex-wrap items-center justify-between gap-2.5">
         <label for="busqueda" class="sr-only">Buscar cliente</label>
@@ -60,11 +66,18 @@
             <div class="rounded-[10px] border border-[#E3E3DE] bg-white px-4 py-8 text-center text-sm leading-normal text-[#5A5A54]">
                 @if (trim($busqueda) !== '')
                     No hay clientes que coincidan con la búsqueda.
+                @elseif ($archivados)
+                    No hay clientes archivados.
                 @else
                     Todavía no hay clientes cargados.
                 @endif
             </div>
         @endif
+
+        <button type="button" wire:click="$toggle('archivados')"
+            class="min-h-11 cursor-pointer self-start border-0 bg-transparent p-0 text-sm font-medium text-[#44443F] underline underline-offset-2 hover:text-[#141413]">
+            {{ $archivados ? 'Volver a los clientes activos' : 'Ver clientes archivados' }}
+        </button>
     </div>
 
     {{-- En el celular el botón queda abajo, a mano del pulgar, como en el prototipo. --}}

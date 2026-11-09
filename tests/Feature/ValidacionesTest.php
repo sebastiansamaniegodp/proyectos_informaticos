@@ -151,6 +151,18 @@ class ValidacionesTest extends TestCase
     }
 
     #[Test]
+    public function un_cliente_se_archiva_y_se_vuelve_a_activar(): void
+    {
+        $cliente = Cliente::create(['nombre' => 'Juan Pérez', 'activo' => 'S']);
+
+        Livewire::test(ClienteFormulario::class, ['cliente' => $cliente])->call('cambiarEstado');
+        $this->assertSame('N', $cliente->refresh()->activo);
+
+        Livewire::test(ClienteFormulario::class, ['cliente' => $cliente])->call('cambiarEstado');
+        $this->assertSame('S', $cliente->refresh()->activo);
+    }
+
+    #[Test]
     public function los_datos_del_cliente_con_formato_invalido_se_rechazan(): void
     {
         Livewire::test(ClienteFormulario::class)

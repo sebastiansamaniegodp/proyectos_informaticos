@@ -61,6 +61,16 @@
             <span wire:loading.remove wire:target="guardar">Guardar cliente</span>
             <span wire:loading wire:target="guardar">Guardando…</span>
         </button>
+
+        @if ($cliente)
+            {{-- Archivar no borra: el cliente puede tener pedidos ya hechos. --}}
+            @php $activo = $cliente->activo === 'S'; @endphp
+            <button type="button" wire:click="cambiarEstado"
+                @if ($activo) wire:confirm="¿Archivar a {{ $cliente->nombre }}? No se borra: se puede volver a activar." @endif
+                class="mt-1 min-h-11 w-full cursor-pointer border-0 bg-transparent p-0 text-sm font-medium text-[#5A5A54] hover:text-[#141413] hover:underline sm:order-first sm:mt-0 sm:mr-auto sm:w-auto">
+                {{ $activo ? 'Archivar' : 'Volver a activar' }}
+            </button>
+        @endif
     </div>
 
 </form>

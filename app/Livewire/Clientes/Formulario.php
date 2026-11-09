@@ -93,6 +93,27 @@ class Formulario extends Component
         $this->redirectRoute('clientes.listado', navigate: true);
     }
 
+    /**
+     * Archivar: el cliente deja de aparecer en el listado y al armar un
+     * pedido, pero no se borra nunca, porque puede tener pedidos ya hechos.
+     * Con la misma acción se vuelve a activar.
+     */
+    public function cambiarEstado(): void
+    {
+        if (! $this->cliente) {
+            return;
+        }
+
+        $activo = $this->cliente->activo === 'S';
+        $this->cliente->update(['activo' => $activo ? 'N' : 'S']);
+
+        session()->flash('aviso', $activo
+            ? "Se archivó a {$this->cliente->nombre}. Se puede volver a activar desde los archivados."
+            : "Se volvió a activar a {$this->cliente->nombre}.");
+
+        $this->redirectRoute('clientes.listado', navigate: true);
+    }
+
     public function render(): View
     {
         return view('livewire.clientes.formulario')

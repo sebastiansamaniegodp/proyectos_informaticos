@@ -20,13 +20,17 @@ class Listado extends Component
     #[Url(as: 'q', except: '')]
     public string $busqueda = '';
 
+    /** Muestra los archivados en lugar de los activos, para reactivarlos. */
+    #[Url(except: false)]
+    public bool $archivados = false;
+
     /**
      * Clientes que cumplen la búsqueda, agrupados por la inicial del nombre.
      */
     #[Computed]
     public function grupos(): Collection
     {
-        return Cliente::activos()
+        return Cliente::where('activo', $this->archivados ? 'N' : 'S')
             ->buscar($this->busqueda)
             ->orderByRaw('upper(nombre)')
             ->get()
