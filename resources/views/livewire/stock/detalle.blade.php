@@ -35,10 +35,12 @@
                 · {{ $venta }}
             </div>
         </div>
+        @can('stock.mover')
         <div class="hidden flex-none gap-2.5 sm:flex">
             <a href="{{ route('stock.ajuste', $producto) }}" wire:navigate class="{{ $botonBlanco }}">Ajuste</a>
             <a href="{{ route('stock.ingreso', $producto) }}" wire:navigate class="{{ $botonNegro }}">Ingreso</a>
         </div>
+        @endcan
     </div>
 
     <div @class(['mt-4 grid gap-2.5', 'grid-cols-3' => $producto->seCorta(), 'grid-cols-1 sm:max-w-[260px]' => ! $producto->seCorta()])>
@@ -126,10 +128,12 @@
         </ul>
     </section>
 
+    @can('stock.mover')
     {{-- En el celular los botones quedan abajo, a mano del pulgar. --}}
     <div class="sticky bottom-0 -mx-4 mt-auto flex gap-2.5 border-t border-[#E3E3DE] bg-white px-4 pt-3 pb-4 sm:hidden">
         <a href="{{ route('stock.ajuste', $producto) }}" wire:navigate class="{{ $botonBlanco }} min-h-[52px] flex-1 text-base">Ajuste</a>
         <a href="{{ route('stock.ingreso', $producto) }}" wire:navigate class="{{ $botonNegro }} min-h-[52px] flex-1 text-base">Ingreso</a>
     </div>
+    @endcan
 
 </div>

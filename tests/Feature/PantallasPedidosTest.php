@@ -32,7 +32,7 @@ class PantallasPedidosTest extends TestCase
     {
         parent::setUp();
 
-        $this->actingAs(Usuario::create(['username' => 'prueba', 'clave_hash' => 'secreta', 'nombre' => 'Prueba', 'activo' => 'S']));
+        $this->actingAs(Usuario::create(['username' => 'prueba', 'clave_hash' => 'secreta', 'nombre' => 'Prueba', 'rol' => 'ADMIN', 'activo' => 'S']));
         $this->p1 = Producto::where('codigo', 'HEX-12-150-50')->firstOrFail();
         $this->app->make(StockService::class)->ingresar($this->p1, 1, 'REPOSICION');
         $this->cliente = Cliente::create(['nombre' => 'Nicolasa Benítez', 'telefono' => '0981 234 567', 'activo' => 'S']);

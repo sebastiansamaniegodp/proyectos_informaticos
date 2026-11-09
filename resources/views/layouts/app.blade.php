@@ -5,15 +5,20 @@
     // 'ruta' => null y se muestran deshabilitados; cada módulo pone su ruta
     // acá cuando se hace su tarea.
     $modulos = [
-        ['nombre' => 'Inicio', 'ruta' => 'inicio', 'activa' => 'inicio', 'icono' => '<path d="M3 10.5 12 3l9 7.5V21H3z"/>'],
-        ['nombre' => 'Pedidos', 'ruta' => 'pedidos.listado', 'activa' => 'pedidos.*', 'icono' => '<path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6"/>'],
-        ['nombre' => 'Clientes', 'ruta' => 'clientes.listado', 'activa' => 'clientes.*', 'icono' => '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.7 3 2.4 3.5 5.2"/>'],
+        ['nombre' => 'Inicio', 'ruta' => 'inicio', 'permiso' => 'inicio', 'activa' => 'inicio', 'icono' => '<path d="M3 10.5 12 3l9 7.5V21H3z"/>'],
+        ['nombre' => 'Pedidos', 'ruta' => 'pedidos.listado', 'permiso' => 'pedidos', 'activa' => 'pedidos.*', 'icono' => '<path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6"/>'],
+        ['nombre' => 'Clientes', 'ruta' => 'clientes.listado', 'permiso' => 'clientes', 'activa' => 'clientes.*', 'icono' => '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.7 3 2.4 3.5 5.2"/>'],
         ['nombre' => 'Stock', 'ruta' => 'stock.listado', 'activa' => 'stock.*', 'icono' => '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>'],
         ['nombre' => 'Catálogo', 'ruta' => 'productos.catalogo', 'activa' => 'productos.*', 'icono' => '<path d="M4 7h16M4 12h16M4 17h16"/>'],
-        ['nombre' => 'Resultado del mes', 'ruta' => 'reportes.resultado', 'activa' => 'reportes.*', 'icono' => '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'],
+        ['nombre' => 'Resultado del mes', 'ruta' => 'reportes.resultado', 'permiso' => 'reportes', 'activa' => 'reportes.*', 'icono' => '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'],
+        ['nombre' => 'Usuarios', 'ruta' => 'usuarios.listado', 'permiso' => 'usuarios', 'activa' => 'usuarios.*', 'icono' => '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.2 4-6.5 8-6.5s7 2.3 8 6.5"/>'],
     ];
 
     $usuario = auth()->user();
+
+    // Cada rol ve solo los módulos a los que puede entrar. Los que no llevan
+    // 'permiso' (stock y catálogo) los ven todos.
+    $modulos = array_filter($modulos, fn ($modulo) => ! isset($modulo['permiso']) || $usuario?->can($modulo['permiso']));
     $iniciales = Str::of($usuario?->nombre ?? '')->explode(' ')->filter()->take(2)
         ->map(fn ($palabra) => Str::upper(Str::substr($palabra, 0, 1)))->implode('');
 @endphp
@@ -41,13 +46,16 @@
         x-bind:class="abierto && 'max-lg:translate-x-0 max-lg:shadow-2xl'"
         class="fixed inset-y-0 left-0 z-40 flex w-[250px] -translate-x-full flex-col bg-[#141413] text-white transition-transform duration-200 lg:sticky lg:top-0 lg:h-dvh lg:flex-none lg:translate-x-0 lg:transition-[width] lg:mini:w-[72px]">
 
-        <a href="{{ route('inicio') }}" wire:navigate class="flex h-14 flex-none items-center border-b border-white/10 px-4 lg:mini:justify-center lg:mini:px-2">
+        <a href="{{ route($usuario?->rol->rutaInicial() ?? 'inicio') }}" wire:navigate class="flex h-14 flex-none items-center border-b border-white/10 px-4 lg:mini:justify-center lg:mini:px-2">
             <img src="{{ asset('img/logo.png') }}" alt="Shopping de los Tejidos" class="h-8 w-auto lg:mini:h-5">
         </a>
 
         <div class="flex flex-none items-center gap-3 border-b border-white/10 px-4 py-3 lg:mini:justify-center lg:mini:px-2">
             <span class="flex size-9 flex-none items-center justify-center rounded-full bg-[#2C2C29] text-sm font-semibold text-white" aria-hidden="true">{{ $iniciales }}</span>
-            <span class="min-w-0 truncate text-sm text-[#C9C9C3] lg:mini:hidden">{{ $usuario?->nombre }}</span>
+            <span class="min-w-0 lg:mini:hidden">
+                <span class="block truncate text-sm text-[#C9C9C3]">{{ $usuario?->nombre }}</span>
+                <span class="block truncate text-xs text-[#8A8A84]">{{ $usuario?->rol->etiqueta() }}</span>
+            </span>
         </div>
 
         <nav class="flex-1 overflow-y-auto px-3 py-4">

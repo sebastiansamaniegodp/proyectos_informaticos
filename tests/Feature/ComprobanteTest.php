@@ -29,7 +29,7 @@ class ComprobanteTest extends TestCase
 
         $this->pedidos = $this->app->make(PedidoService::class);
         $this->p1 = Producto::where('codigo', 'HEX-12-150-50')->firstOrFail();
-        $this->actingAs(Usuario::create(['username' => 'prueba', 'clave_hash' => 'secreta', 'nombre' => 'Prueba', 'activo' => 'S']));
+        $this->actingAs(Usuario::create(['username' => 'prueba', 'clave_hash' => 'secreta', 'nombre' => 'Prueba', 'rol' => 'ADMIN', 'activo' => 'S']));
     }
 
     /** El ejemplo integral (PED-07) para un cliente que solo tiene el nombre (C1). */

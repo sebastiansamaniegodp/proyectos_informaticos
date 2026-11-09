@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\Rol;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 /**
- * Usuario del sistema (tabla USUARIO del DER). Login básico, sin roles.
+ * Usuario del sistema (tabla USUARIO del DER). Login básico; lo que puede
+ * hacer cada uno depende de su rol (App\Enums\Rol).
  */
 class Usuario extends Authenticatable
 {
@@ -25,6 +27,7 @@ class Usuario extends Authenticatable
         'username',
         'clave_hash',
         'nombre',
+        'rol',
         'activo',
     ];
 
@@ -32,10 +35,16 @@ class Usuario extends Authenticatable
         'clave_hash',
     ];
 
+    /** Mismo valor por defecto que la columna, para un usuario recién creado. */
+    protected $attributes = [
+        'rol' => 'VENDEDOR',
+    ];
+
     protected function casts(): array
     {
         return [
             'clave_hash' => 'hashed',
+            'rol' => Rol::class,
         ];
     }
 
