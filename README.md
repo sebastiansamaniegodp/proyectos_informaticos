@@ -42,6 +42,17 @@ php artisan serve
 
 El sistema queda en http://localhost:8000.
 
+## Datos de demostración
+
+Para ver el Inicio, los reportes y el comprobante con números, hay un seeder
+con productos, clientes y unos seis meses de pedidos (precios ficticios):
+
+```bash
+php artisan db:seed --class=DemoSeeder
+```
+
+Agrega datos a la base que esté configurada; no lo corre `php artisan db:seed`.
+
 ## Ramas
 
 Se trabaja directo sobre `main`.

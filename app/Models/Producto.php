@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 /**
  * Producto (tabla PRODUCTO del DER). Una fila por variante comercial: cada
@@ -99,6 +100,52 @@ class Producto extends Model
     public function medidas(): string
     {
         return self::armarMedidas($this->abertura, $this->calibre, $this->altura_cm, $this->metraje_rollo);
+    }
+
+    /**
+     * Nombre del producto en las líneas del pedido y en el comprobante:
+     * Hexagonal 1/2" n 24 · 1,50 m × 50 m.
+     */
+    public function nombreCompleto(): string
+    {
+        $medidas = $this->medidas();
+
+        return $medidas === '' || ! $this->esTejido() ? $this->descripcion : $this->familia->nombreCorto().' '.$medidas;
+    }
+
+    /**
+     * Nombre corto para los resúmenes de los listados: en los tejidos, la
+     * familia y la altura ("Hexagonal 1,50"); en lo demás, la descripción
+     * ("Alambre de púa de 500 m").
+     */
+    public function nombreCorto(): string
+    {
+        if (! $this->esTejido()) {
+            return Str::limit($this->descripcion, 32);
+        }
+
+        $altura = $this->altura_cm ? number_format($this->altura_cm / 100, 2, ',', '.') : '';
+
+        return trim($this->familia->nombreCorto().' '.$altura);
+    }
+
+    /** Las familias de tejido se nombran por sus medidas; alambres y accesorios, por su descripción. */
+    private function esTejido(): bool
+    {
+        return Str::startsWith($this->familia->nombre, 'Tejido');
+    }
+
+    /**
+     * Costo de un metro cortado: el costo de la pieza dividido por los metros
+     * del rollo (RN-33), en guaraníes enteros (SP-02).
+     */
+    public function costoPorMetro(): ?int
+    {
+        if ($this->costo === null || ! $this->metraje_rollo) {
+            return null;
+        }
+
+        return (int) round($this->costo / $this->metraje_rollo);
     }
 
     public function fotoUrl(): ?string

@@ -18,6 +18,60 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
+    // Botón "Enviar comprobante" del pedido. Baja el PDF y abre el menú de
+    // compartir del celular (Web Share API), donde se elige WhatsApp. Si el
+    // navegador no puede compartir archivos (la mayoría de las computadoras),
+    // el PDF se descarga para adjuntarlo a mano.
+    //
+    // El PDF se pide apenas se abre el pedido: el navegador (sobre todo
+    // Safari) solo deja compartir justo después del toque, y si hubiera que
+    // esperar la descarga el menú no se abriría.
+    window.Alpine.data('compartirComprobante', (url, archivo, titulo) => ({
+        enviando: false,
+        error: '',
+        pdf: null,
+        pedido: null,
+
+        init() {
+            this.pedido = this.bajar().catch(() => null);
+        },
+
+        async bajar() {
+            const respuesta = await fetch(url, { credentials: 'same-origin' });
+            if (!respuesta.ok) throw new Error(String(respuesta.status));
+            this.pdf = new File([await respuesta.blob()], archivo, { type: 'application/pdf' });
+            return this.pdf;
+        },
+
+        async compartir() {
+            this.error = '';
+
+            let pdf = this.pdf;
+            if (!pdf) {
+                this.enviando = true;
+                pdf = (await this.pedido) ?? (await this.bajar().catch(() => null));
+                this.enviando = false;
+            }
+
+            if (!pdf) {
+                this.error = 'No se pudo generar el comprobante. Revisá la conexión y probá de nuevo.';
+                return;
+            }
+
+            if (navigator.canShare?.({ files: [pdf] })) {
+                try {
+                    await navigator.share({ files: [pdf], title: titulo });
+                } catch (error) {
+                    // Cerrar el menú sin elegir nada no es un error.
+                    if (error?.name !== 'AbortError') descargar(pdf);
+                }
+                return;
+            }
+
+            descargar(pdf);
+        },
+    }));
+
     // Foto del producto: se achica en el navegador antes de subirla. Las fotos
     // del celular pesan varios MB y PHP acepta hasta 2 MB por archivo; así llega
     // un JPEG de 1200 px que pesa unos cientos de KB.
@@ -81,6 +135,16 @@ document.addEventListener('input', (evento) => {
         campo.setSelectionRange?.(cursor, cursor);
     }
 }, true);
+
+function descargar(archivo) {
+    const enlace = document.createElement('a');
+    enlace.href = URL.createObjectURL(archivo);
+    enlace.download = archivo.name;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    setTimeout(() => URL.revokeObjectURL(enlace.href), 10000);
+}
 
 async function achicar(archivo, ladoMaximo) {
     const imagen = await createImageBitmap(archivo);

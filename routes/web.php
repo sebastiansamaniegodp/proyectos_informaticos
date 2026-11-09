@@ -1,11 +1,17 @@
 <?php
 
 use App\Http\Controllers\Auth\IngresoController;
+use App\Http\Controllers\ComprobanteController;
 use App\Http\Controllers\ProductoFotoController;
 use App\Livewire\Clientes\Formulario as ClienteFormulario;
 use App\Livewire\Clientes\Listado as ClienteListado;
+use App\Livewire\Inicio;
+use App\Livewire\Pedidos\Detalle as PedidoDetalle;
+use App\Livewire\Pedidos\Formulario as PedidoFormulario;
+use App\Livewire\Pedidos\Listado as PedidoListado;
 use App\Livewire\Productos\Catalogo;
 use App\Livewire\Productos\Formulario;
+use App\Livewire\Reportes\Resultado;
 use App\Livewire\Stock\Ajuste as StockAjuste;
 use App\Livewire\Stock\Detalle as StockDetalle;
 use App\Livewire\Stock\Ingreso as StockIngreso;
@@ -18,8 +24,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    // Provisorio: la pantalla de Inicio llega con su propia tarea.
-    Route::get('/', fn () => view('inicio'))->name('inicio');
+    Route::livewire('/', Inicio::class)->name('inicio');
     Route::post('/salir', [IngresoController::class, 'destroy'])->name('logout');
 
     Route::livewire('/productos', Catalogo::class)->name('productos.catalogo');
@@ -35,4 +40,12 @@ Route::middleware('auth')->group(function () {
     Route::livewire('/stock/{producto}', StockDetalle::class)->name('stock.detalle');
     Route::livewire('/stock/{producto}/ingreso', StockIngreso::class)->name('stock.ingreso');
     Route::livewire('/stock/{producto}/ajuste', StockAjuste::class)->name('stock.ajuste');
+
+    Route::livewire('/pedidos', PedidoListado::class)->name('pedidos.listado');
+    Route::livewire('/pedidos/nuevo', PedidoFormulario::class)->name('pedidos.nuevo');
+    Route::livewire('/pedidos/{pedido}', PedidoDetalle::class)->whereNumber('pedido')->name('pedidos.detalle');
+    Route::livewire('/pedidos/{pedido}/editar', PedidoFormulario::class)->whereNumber('pedido')->name('pedidos.editar');
+    Route::get('/pedidos/{pedido}/comprobante', ComprobanteController::class)->whereNumber('pedido')->name('pedidos.comprobante');
+
+    Route::livewire('/resultado', Resultado::class)->name('reportes.resultado');
 });
