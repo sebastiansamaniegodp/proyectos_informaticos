@@ -44,10 +44,6 @@
             </button>
         </form>
 
-        <div class="text-[13px] leading-normal text-[#A8A8A2]">
-            La sesión queda abierta 30 días, para no escribir la contraseña cada vez que se abre el sistema.
-        </div>
-
     </main>
 </body>
 </html>
