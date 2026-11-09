@@ -112,12 +112,6 @@
                 @endif
             </div>
         @endif
-
-        @if ($filtro === 'pendientes')
-            <p class="m-0 text-[13px] leading-normal text-[#5A5A54]">
-                Un pedido en borrador no reserva mercadería: el stock recién se descuenta al confirmarlo.
-            </p>
-        @endif
     </div>
 
     {{-- En el celular el botón queda abajo, a mano del pulgar, como en el prototipo. --}}
