@@ -103,6 +103,28 @@ class ValidacionesTest extends TestCase
     }
 
     #[Test]
+    public function la_abertura_con_el_numero_solo_se_guarda_con_la_unidad_de_la_familia(): void
+    {
+        $this->productoValido()
+            ->set('id_familia', Familia::where('nombre', 'Tejido romboidal')->value('id_familia'))
+            ->set('altura', '20')
+            ->set('abertura', '5')
+            ->set('calibre', '')
+            ->set('unidad_venta', 'METRO')
+            ->set('precio_venta', '10.000')
+            ->set('precio_mayorista', '8.000')
+            ->set('costo', '6.000')
+            ->call('guardar')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('producto', ['codigo' => 'ROM-5-20', 'abertura' => '5 cm']);
+
+        $this->productoValido()->set('abertura', '1/2')->call('guardar')->assertHasNoErrors();
+
+        $this->assertDatabaseHas('producto', ['codigo' => 'HEX-12-100-50', 'abertura' => '1/2"']);
+    }
+
+    #[Test]
     public function un_producto_dado_de_baja_sale_del_catalogo_y_vuelve(): void
     {
         $producto = $this->hexagonal();

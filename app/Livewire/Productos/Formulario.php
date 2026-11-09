@@ -141,7 +141,7 @@ class Formulario extends Component
         $datos = Validator::make([
             'id_familia' => $this->id_familia,
             'altura' => self::numero($this->altura),
-            'abertura' => trim($this->abertura) ?: null,
+            'abertura' => self::abertura($this->abertura, $familiaElegida),
             'calibre' => trim($this->calibre) ?: null,
             'unidad_venta' => $this->unidad_venta,
             'metraje' => $this->esRollo() ? self::numero($this->metraje) : null,
@@ -159,7 +159,7 @@ class Formulario extends Component
                     if (! preg_match('/^(\d+|\d+\s*\/\s*\d+|\d+\s+\d+\s*\/\s*\d+|\d*\s*[½¼¾])\s*("|”|\'\'|pulg\.?)$/u', $valor)) {
                         $fallar('En el hexagonal la abertura va en pulgadas, por ejemplo 1/2" o 2".');
                     }
-                } elseif (! preg_match('/^\d+([.,]\d+)?(\s*x\s*\d+([.,]\d+)?)?\s*cm$/iu', $valor)) {
+                } elseif (! preg_match('/^\d+([.,]\d+)?(\s*[x×]\s*\d+([.,]\d+)?)?\s*cm$/iu', $valor)) {
                     $fallar('La abertura va en centímetros, por ejemplo 5 cm o 5 x 5 cm.');
                 }
             }],
@@ -285,6 +285,27 @@ class Formulario extends Component
     {
         return view('livewire.productos.formulario')
             ->title($this->producto ? 'Editar producto' : 'Nuevo producto');
+    }
+
+    /**
+     * La unidad de la abertura ya la da la familia (DD-16), así que un número
+     * solo se completa con ella: "5" queda "5 cm" y, en el hexagonal, 1/2
+     * queda 1/2". Lo que no es un número solo queda como está, para que la
+     * validación lo revise. Vacío queda en null.
+     */
+    private static function abertura(string $texto, ?Familia $familia): ?string
+    {
+        $texto = trim($texto);
+
+        if ($texto === '') {
+            return null;
+        }
+
+        if ($familia?->prefijoCodigo() === 'HEX') {
+            return preg_match('/^(\d+|\d+\s*\/\s*\d+|\d+\s+\d+\s*\/\s*\d+|\d*\s*[½¼¾])$/u', $texto) ? $texto.'"' : $texto;
+        }
+
+        return preg_match('/^\d+([.,]\d+)?(\s*[x×]\s*\d+([.,]\d+)?)?$/iu', $texto) ? $texto.' cm' : $texto;
     }
 
     /**
